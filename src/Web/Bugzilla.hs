@@ -66,8 +66,6 @@ module Web.Bugzilla
 , fieldName
 
 , BugzillaException (..)
-
-, searchRequest
 ) where
 
 import Control.Exception (throw, try)
@@ -240,8 +238,3 @@ getUserById session uid = do
     []  -> return Nothing
     _   -> throw $ BugzillaUnexpectedValue
                    "Request for a single user returned multiple users"
-
-searchRequest :: BugzillaSession -> SearchExpression -> Request
-searchRequest session search =
-  let searchQuery = evalSearchExpr search in
-    newBzRequest session ["bug"] searchQuery
