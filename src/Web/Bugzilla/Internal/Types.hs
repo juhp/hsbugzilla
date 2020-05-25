@@ -33,13 +33,17 @@ module Web.Bugzilla.Internal.Types
 , searchFieldName
 ) where
 
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
+#if MIN_VERSION_base(4,8,0)
 #else
 import Control.Applicative (pure, (<$>), (<*>))
 #endif
-import Control.Monad (MonadPlus, mzero)
+import Control.Monad (mzero)
 import Data.Aeson
+#if MIN_VERSION_aeson(1,0,0)
+import Data.Aeson.Text
+#else
 import Data.Aeson.Encode
+#endif
 import Data.Aeson.Types
 import qualified Data.HashMap.Strict as H
 import qualified Data.Text as T

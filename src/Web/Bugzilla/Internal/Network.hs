@@ -27,7 +27,10 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
+#if MIN_VERSION_base(4,11,0)
+#else
 import Data.Monoid ((<>))
+#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Typeable
