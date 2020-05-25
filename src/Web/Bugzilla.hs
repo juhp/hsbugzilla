@@ -21,8 +21,6 @@
 module Web.Bugzilla
 ( -- * Connecting to Bugzilla
   newBugzillaContext
-, closeBugzillaContext
-, withBugzillaContext
 , loginSession
 , anonymousSession
 
@@ -70,11 +68,11 @@ module Web.Bugzilla
 , BugzillaException (..)
 ) where
 
-import Control.Exception (bracket, throw, try)
+import Control.Exception (throw, try)
 import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
 import Network.Connection (TLSSettings(..))
-import Network.HTTP.Conduit (mkManagerSettings, newManager, closeManager)
+import Network.HTTP.Conduit (mkManagerSettings, newManager)
 
 import Web.Bugzilla.Internal.Network
 import Web.Bugzilla.Internal.Search
@@ -88,15 +86,6 @@ newBugzillaContext server = do
   let settings = mkManagerSettings (TLSSettingsSimple True False False) Nothing
   manager <- liftIO $ newManager settings
   return $ BugzillaContext server manager
-
--- | Closes the provided 'BugzillaContext'. Using it afterwards is an error.
-closeBugzillaContext :: BugzillaContext -> IO ()
-closeBugzillaContext = closeManager . bzManager
-
--- | Creates a 'BugzillaContext' and ensures that it will be closed
---   automatically, even if an exception is thrown.
-withBugzillaContext :: BugzillaServer -> (BugzillaContext -> IO a) -> IO a
-withBugzillaContext server = bracket (newBugzillaContext server) closeBugzillaContext
 
 -- | Attempts to create a logged-in 'BugzillaSession' using the
 --   provided username and password. Returns 'Nothing' if login
