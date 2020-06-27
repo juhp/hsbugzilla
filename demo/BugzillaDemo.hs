@@ -40,17 +40,17 @@ withBz mLogin mServer f = do
   let server = case mServer of
                  Just s  -> s
                  Nothing -> error "Please specify a server with '--server'"
-  withBugzillaContext server $ \ctx ->
-    case mLogin of
-      Just login -> do hPutStrLn stderr "Enter password: "
-                       password <- T.pack <$> withEcho False getLine
-                       mSession <- loginSession ctx login password
-                       case mSession of
-                         Just session -> do hPutStrLn stderr "Login successful."
-                                            f session
-                         Nothing      -> do hPutStrLn stderr "Login failed. Falling back to anonymous session."
-                                            f $ anonymousSession ctx
-      Nothing -> f $ anonymousSession ctx
+  ctx <- newBugzillaContext server
+  case mLogin of
+    Just login -> do hPutStrLn stderr "Enter password: "
+                     password <- T.pack <$> withEcho False getLine
+                     mSession <- loginSession ctx login password
+                     case mSession of
+                       Just session -> do hPutStrLn stderr "Login successful."
+                                          f session
+                       Nothing      -> do hPutStrLn stderr "Login failed. Falling back to anonymous session."
+                                          f $ anonymousSession ctx
+    Nothing -> f $ anonymousSession ctx
 
 
 doAssignedTo :: UserEmail -> BugzillaSession -> IO ()
