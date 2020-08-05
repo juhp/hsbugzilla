@@ -18,7 +18,7 @@
 --
 --   There's a somewhat more in-depth demo program included with the
 --   source code to this package.
-module Web.Bugzilla
+module Web.Bugzilla.RedHat
 ( -- * Connecting to Bugzilla
   newBugzillaContext
 , loginSession
@@ -74,9 +74,9 @@ import qualified Data.Text as T
 import Network.Connection (TLSSettings(..))
 import Network.HTTP.Conduit (mkManagerSettings, newManager)
 
-import Web.Bugzilla.Internal.Network
-import Web.Bugzilla.Internal.Search
-import Web.Bugzilla.Internal.Types
+import Web.Bugzilla.RedHat.Internal.Network
+import Web.Bugzilla.RedHat.Internal.Search
+import Web.Bugzilla.RedHat.Internal.Types
 
 -- | Creates a new 'BugzillaContext', suitable for connecting to the
 --   provided server. You should try to reuse 'BugzillaContext's

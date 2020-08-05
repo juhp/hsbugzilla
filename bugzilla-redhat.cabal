@@ -31,11 +31,11 @@ flag BuildDemo
 
 library
   ghc-options:         -Wall
-  exposed-modules:     Web.Bugzilla,
-                       Web.Bugzilla.Search
-  other-modules:       Web.Bugzilla.Internal.Network,
-                       Web.Bugzilla.Internal.Search,
-                       Web.Bugzilla.Internal.Types
+  exposed-modules:     Web.Bugzilla.RedHat,
+                       Web.Bugzilla.RedHat.Search
+  other-modules:       Web.Bugzilla.RedHat.Internal.Network,
+                       Web.Bugzilla.RedHat.Internal.Search,
+                       Web.Bugzilla.RedHat.Internal.Types
   build-depends:       base >=4.6 && <4.15,
                        aeson >=0.7 && <1.5,
                        blaze-builder >=0.3 && <0.5,

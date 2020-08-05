@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Web.Bugzilla.Internal.Types
+module Web.Bugzilla.RedHat.Internal.Types
 ( BugId
 , AttachmentId
 , CommentId
@@ -33,8 +33,7 @@ module Web.Bugzilla.Internal.Types
 , searchFieldName
 ) where
 
-#if MIN_VERSION_base(4,8,0)
-#else
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative (pure, (<$>), (<*>))
 #endif
 import Control.Monad (mzero)

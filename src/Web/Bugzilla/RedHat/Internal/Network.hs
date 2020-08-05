@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Web.Bugzilla.Internal.Network
+module Web.Bugzilla.RedHat.Internal.Network
 ( BugzillaServer
 , BugzillaContext (..)
 , BugzillaToken (..)
@@ -16,8 +16,7 @@ module Web.Bugzilla.Internal.Network
 ) where
 
 import Blaze.ByteString.Builder (toByteString)
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
-#else
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>), (<*>))
 #endif
 import Control.Exception (Exception, throw)
@@ -27,8 +26,7 @@ import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
-#if MIN_VERSION_base(4,11,0)
-#else
+#if !MIN_VERSION_base(4,11,0)
 import Data.Monoid ((<>))
 #endif
 import qualified Data.Text as T

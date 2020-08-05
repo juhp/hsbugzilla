@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Web.Bugzilla.Search
+module Web.Bugzilla.RedHat.Search
 (
   -- * Search operators
   (.==.)
@@ -37,8 +37,8 @@ module Web.Bugzilla.Search
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime(..))
 
-import Web.Bugzilla.Internal.Search
-import Web.Bugzilla.Internal.Types
+import Web.Bugzilla.RedHat.Internal.Search
+import Web.Bugzilla.RedHat.Internal.Types
 
 (.==.) :: FieldType a => Field a -> a -> SearchExpression
 (.==.) = (Term .) . BinaryOp "equals"
