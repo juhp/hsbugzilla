@@ -43,6 +43,7 @@ module Web.Bugzilla.RedHat
 , getUser
 , getUserById
 , newBzRequest
+, sendBzRequest
 , intAsText
 
 , BugId
