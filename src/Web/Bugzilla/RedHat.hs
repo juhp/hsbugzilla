@@ -44,6 +44,8 @@ module Web.Bugzilla.RedHat
 , getUserById
 , newBzRequest
 , sendBzRequest
+, lookupKey
+, lookupKey'
 , intAsText
 
 , BugId
