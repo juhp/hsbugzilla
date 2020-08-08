@@ -1,5 +1,9 @@
 # bugzilla-redhat version history
 
+## 0.3.1 (2020-08-xx)
+- export sendBzRequest
+- add lookupKey and lookupKey'
+
 ## 0.3.0 (2020-08-05)
 - a fork of Seth Fowler's [bugzilla library](https://hackage.haskell.org/package/bugzilla)
 - updated to build with Stackage LTS > 5 up to LTS 16 and Nightly
