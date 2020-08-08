@@ -1,6 +1,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+-- | A modified version of Web.Bugzilla.Search to support
+--   the list fields in Red Hat's modified bugzilla API.
+
 module Web.Bugzilla.RedHat.Search
 (
   -- * Search operators

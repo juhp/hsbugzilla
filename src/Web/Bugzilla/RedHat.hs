@@ -5,6 +5,9 @@
 -- | This package is designed to provide an easy-to-use, typesafe
 --   interface to querying Bugzilla from Haskell.
 --
+--   A modified version of Web.Bugzilla to support
+--   the list fields in Red Hat's modified bugzilla API.
+--
 --   A very simple program using this package might look like this:
 --
 -- >   ctx <- newBugzillaContext "bugzilla.example.org"
