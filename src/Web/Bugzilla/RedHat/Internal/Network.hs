@@ -13,8 +13,6 @@ module Web.Bugzilla.RedHat.Internal.Network
 , requestUrl
 , newBzRequest
 , sendBzRequest
-, lookupKey
-, lookupKey'
 ) where
 
 import Blaze.ByteString.Builder (toByteString)
@@ -26,7 +24,6 @@ import Control.Monad (mzero)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
-import Data.Aeson.Types
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 #if !MIN_VERSION_base(4,11,0)
@@ -116,12 +113,3 @@ sendBzRequest session req = runResourceT $ do
   case mResult of
     Left msg      -> liftIO $ handleError msg (responseBody response)
     Right decoded -> return decoded
-
--- | looks up key in object
-lookupKey :: FromJSON a => T.Text -> Object -> Maybe a
-lookupKey k = parseMaybe (.: k)
-
--- | like lookupKey but raises an error if no key found
-lookupKey' :: FromJSON a => T.Text -> Object -> a
-lookupKey' k =
-  either error id . parseEither (.: k)
