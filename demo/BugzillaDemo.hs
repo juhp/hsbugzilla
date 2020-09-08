@@ -9,8 +9,8 @@ import Data.Time.Clock (diffUTCTime)
 import System.Environment (getArgs)
 import System.IO
 
-import Web.Bugzilla
-import Web.Bugzilla.Search
+import Web.Bugzilla.RedHat
+import Web.Bugzilla.RedHat.Search
 
 main :: IO ()
 main = dispatch Nothing Nothing =<< getArgs
