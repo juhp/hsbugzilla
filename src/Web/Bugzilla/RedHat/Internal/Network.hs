@@ -4,18 +4,16 @@
 
 module Web.Bugzilla.RedHat.Internal.Network
 ( BugzillaServer
-, BugzillaContext (..)
 , BugzillaToken (..)
 , BugzillaSession (..)
 , BugzillaException (..)
 , QueryPart
 , Request
-, requestUrl
 , newBzRequest
 , sendBzRequest
-) where
+, makeItem
+  ) where
 
-import Blaze.ByteString.Builder (toByteString)
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>), (<*>))
 #endif
@@ -24,26 +22,19 @@ import Control.Monad (mzero)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
-import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as BL
+import Data.List
 #if !MIN_VERSION_base(4,11,0)
 import Data.Monoid ((<>))
 #endif
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Data.Typeable
-import Network.HTTP.Conduit (Manager, Request(..), Response(..), defaultRequest, host, httpLbs, path, queryString, secure)
-import Network.HTTP.Types.URI (QueryText, encodePathSegments, renderQueryText)
+import Network.HTTP.Conduit
+import Network.HTTP.Simple
+import Network.HTTP.Types.URI (QueryText, queryTextToQuery)
 
-type BugzillaServer  = T.Text
-
--- | Holds information about a 'BugzillaServer' and manages outgoing
--- connections. You can use 'newBugzillaContext' or
--- 'withBugzillaContext' to create one.
-data BugzillaContext = BugzillaContext
-  { bzServer  :: BugzillaServer
-  , bzManager :: Manager
-  }
+type BugzillaServer  = String
 
 newtype BugzillaToken = BugzillaToken T.Text
 
@@ -53,10 +44,10 @@ instance FromJSON BugzillaToken where
 
 -- | A session for Bugzilla queries. Use 'anonymousSession' and
 -- 'loginSession', as appropriate, to create one.
-data BugzillaSession = AnonymousSession BugzillaContext
-                     | LoginSession BugzillaContext BugzillaToken
+data BugzillaSession = AnonymousSession BugzillaServer
+                     | LoginSession BugzillaServer BugzillaToken
 
-bzContext :: BugzillaSession -> BugzillaContext
+bzContext :: BugzillaSession -> BugzillaServer
 bzContext (AnonymousSession ctx) = ctx
 bzContext (LoginSession ctx _)   = ctx
 
@@ -69,27 +60,19 @@ instance Exception BugzillaException
 
 type QueryPart = (T.Text, Maybe T.Text)
 
-requestUrl :: Request -> B.ByteString
-requestUrl req = "https://" <> host req <> path req <> queryString req
-
-sslRequest :: Request
-sslRequest =
-  defaultRequest {
-    secure = True,
-    port   = 443
-  }
-
-newBzRequest :: BugzillaSession -> [T.Text] -> QueryText -> Request
+newBzRequest :: BugzillaSession -> [String] -> QueryText -> Request
 newBzRequest session methodParts query =
-    sslRequest {
-      host        = TE.encodeUtf8 . bzServer . bzContext $ session,
-      path        = toByteString $ encodePathSegments $ "rest" : methodParts,
-      queryString = toByteString $ renderQueryText True queryWithToken
-    }
+  setRequestQueryString queryWithToken $
+  parseRequest_ $ "https://" ++ server ++ "/" ++ pth
   where
+    server = bzContext $ session
+    pth = "rest/" ++ intercalate "/" methodParts
     queryWithToken = case session of
-                       AnonymousSession _                   -> query
-                       LoginSession _ (BugzillaToken token) -> ("token", Just token) : query
+                       AnonymousSession _                   -> queryTextToQuery query
+                       LoginSession _ (BugzillaToken token) -> makeItem "token" (T.unpack token) : queryTextToQuery query
+
+makeItem :: String -> String -> QueryItem
+makeItem k val = (B.pack k, Just (B.pack val))
 
 data BzError = BzError Int String
                deriving (Eq, Show)
@@ -106,9 +89,9 @@ handleError parseError body = do
     Left _                   -> throw $ BugzillaJSONParseError parseError
     Right (BzError code msg) -> throw $ BugzillaAPIError code msg
 
-sendBzRequest :: FromJSON a => BugzillaSession -> Request -> IO a
-sendBzRequest session req = runResourceT $ do
-  response <- liftIO $ httpLbs req . bzManager . bzContext $ session
+sendBzRequest :: FromJSON a => Request -> IO a
+sendBzRequest req = runResourceT $ do
+  response <- liftIO $ httpLBS req
   let mResult = eitherDecode $ responseBody response
   case mResult of
     Left msg      -> liftIO $ handleError msg (responseBody response)

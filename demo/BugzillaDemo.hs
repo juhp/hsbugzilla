@@ -17,7 +17,7 @@ main = dispatch Nothing Nothing =<< getArgs
 
 dispatch :: Maybe UserEmail -> Maybe BugzillaServer -> [String] -> IO ()
 dispatch Nothing s ("--login" : user : as)    = dispatch (Just $ T.pack user) s as
-dispatch l Nothing ("--server" : server : as) = dispatch l (Just $ T.pack server) as
+dispatch l Nothing ("--server" : server : as) = dispatch l (Just server) as
 dispatch l s ["--assigned-to", user]          = withBz l s $ doAssignedTo (T.pack user)
 dispatch l s ["--assigned-to-brief", user]    = withBz l s $ doAssignedToBrief (T.pack user)
 dispatch l s ["--requests", user]             = withBz l s $ doRequests (T.pack user)
@@ -40,17 +40,16 @@ withBz mLogin mServer f = do
   let server = case mServer of
                  Just s  -> s
                  Nothing -> error "Please specify a server with '--server'"
-  ctx <- newBugzillaContext server
   case mLogin of
     Just login -> do hPutStrLn stderr "Enter password: "
                      password <- T.pack <$> withEcho False getLine
-                     mSession <- loginSession ctx login password
+                     mSession <- loginSession server login password
                      case mSession of
                        Just session -> do hPutStrLn stderr "Login successful."
                                           f session
                        Nothing      -> do hPutStrLn stderr "Login failed. Falling back to anonymous session."
-                                          f $ anonymousSession ctx
-    Nothing -> f $ anonymousSession ctx
+                                          f $ anonymousSession server
+    Nothing -> f $ anonymousSession server
 
 
 doAssignedTo :: UserEmail -> BugzillaSession -> IO ()

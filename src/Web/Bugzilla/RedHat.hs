@@ -23,12 +23,10 @@
 --   source code to this package.
 module Web.Bugzilla.RedHat
 ( -- * Connecting to Bugzilla
-  newBugzillaContext
-, loginSession
+  loginSession
 , anonymousSession
 
 , BugzillaServer
-, BugzillaContext
 , BugzillaSession (..)
 , BugzillaToken (..)
 
@@ -73,34 +71,25 @@ module Web.Bugzilla.RedHat
 ) where
 
 import Control.Exception (throw, try)
-import Control.Monad.IO.Class (liftIO)
 import qualified Data.Text as T
-import Network.Connection (TLSSettings(..))
-import Network.HTTP.Conduit (mkManagerSettings, newManager)
 
 import Web.Bugzilla.RedHat.Internal.Network
 import Web.Bugzilla.RedHat.Internal.Search
 import Web.Bugzilla.RedHat.Internal.Types
 
--- | Creates a new 'BugzillaContext', suitable for connecting to the
---   provided server. You should try to reuse 'BugzillaContext's
---   whenever possible, because creating them is expensive.
-newBugzillaContext :: BugzillaServer -> IO BugzillaContext
-newBugzillaContext server = do
-  let settings = mkManagerSettings (TLSSettingsSimple True False False) Nothing
-  manager <- liftIO $ newManager settings
-  return $ BugzillaContext server manager
+-- makeKey :: String -> String -> Query
+-- makeKey k val = [(B.pack k, Just (B.pack val))]
 
 -- | Attempts to create a logged-in 'BugzillaSession' using the
 --   provided username and password. Returns 'Nothing' if login
 --   fails.
-loginSession :: BugzillaContext -> UserEmail -> T.Text -> IO (Maybe BugzillaSession)
+loginSession :: BugzillaServer -> UserEmail -> T.Text -> IO (Maybe BugzillaSession)
 loginSession ctx user password = do
   let loginQuery = [("login", Just user),
                     ("password", Just password)]
       session = anonymousSession ctx
       req = newBzRequest session ["login"] loginQuery
-  eToken <- try $ sendBzRequest session req
+  eToken <- try $ sendBzRequest req
   return $ case eToken of
              Left (BugzillaAPIError 300 _) -> Nothing
              Left e                        -> throw e
@@ -108,7 +97,7 @@ loginSession ctx user password = do
 
 -- | Creates an anonymous 'BugzillaSession'. Note that some content
 --   will be hidden by Bugzilla when you make queries in this state.
-anonymousSession :: BugzillaContext -> BugzillaSession
+anonymousSession :: BugzillaServer -> BugzillaSession
 anonymousSession = AnonymousSession
 
 intAsText :: Int -> T.Text
@@ -120,7 +109,7 @@ searchBugs :: BugzillaSession -> SearchExpression -> IO [Bug]
 searchBugs session search = do
   let searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] searchQuery
-  (BugList bugs) <- sendBzRequest session req
+  (BugList bugs) <- sendBzRequest req
   return bugs
 
 -- | Like 'searchBugs', but returns a list of 'BugId's. You can
@@ -134,7 +123,7 @@ searchBugs' session search = do
   let fieldsQuery = [("include_fields", Just "id")]
       searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] (fieldsQuery ++ searchQuery)
-  (BugIdList bugs) <- sendBzRequest session req
+  (BugIdList bugs) <- sendBzRequest req
   return bugs
 
 -- | Search Bugzilla and returns a limited number of results. You can
@@ -153,7 +142,7 @@ searchBugsWithLimit session limit offset search = do
                     ("offset", Just $ intAsText offset)]
       searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] (limitQuery ++ searchQuery)
-  (BugList bugs) <- sendBzRequest session req
+  (BugList bugs) <- sendBzRequest req
   return bugs
 
 -- | Like 'searchBugsWithLimit', but returns a list of 'BugId's. See
@@ -169,14 +158,14 @@ searchBugsWithLimit' session limit offset search = do
                     ("offset", Just $ intAsText offset)]
       searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] (fieldsQuery ++ limitQuery ++ searchQuery)
-  (BugIdList bugs) <- sendBzRequest session req
+  (BugIdList bugs) <- sendBzRequest req
   return bugs
 
 -- | Retrieve a bug by bug number.
 getBug :: BugzillaSession -> BugId -> IO (Maybe Bug)
 getBug session bid = do
-  let req = newBzRequest session ["bug", intAsText bid] []
-  (BugList bugs) <- sendBzRequest session req
+  let req = newBzRequest session ["bug", show bid] []
+  (BugList bugs) <- sendBzRequest req
   case bugs of
     [bug] -> return $ Just bug
     []    -> return Nothing
@@ -186,8 +175,8 @@ getBug session bid = do
 -- | Retrieve a bug by attachment number.
 getAttachment :: BugzillaSession -> AttachmentId -> IO (Maybe Attachment)
 getAttachment session aid = do
-  let req = newBzRequest session ["bug", "attachment", intAsText aid] []
-  (AttachmentList as) <- sendBzRequest session req
+  let req = newBzRequest session ["bug", "attachment", show aid] []
+  (AttachmentList as) <- sendBzRequest req
   case as of
     [a] -> return $ Just a
     []  -> return Nothing
@@ -197,35 +186,35 @@ getAttachment session aid = do
 -- | Get all attachments for a bug.
 getAttachments :: BugzillaSession -> BugId -> IO [Attachment]
 getAttachments session bid = do
-  let req = newBzRequest session ["bug", intAsText bid, "attachment"] []
-  (AttachmentList as) <- sendBzRequest session req
+  let req = newBzRequest session ["bug", show bid, "attachment"] []
+  (AttachmentList as) <- sendBzRequest req
   return as
 
 -- | Get all comments for a bug.
 getComments :: BugzillaSession -> BugId -> IO [Comment]
 getComments session bid = do
-  let req = newBzRequest session ["bug", intAsText bid, "comment"] []
-  (CommentList as) <- sendBzRequest session req
+  let req = newBzRequest session ["bug", show bid, "comment"] []
+  (CommentList as) <- sendBzRequest req
   return as
 
 -- | Get the history for a bug.
 getHistory :: BugzillaSession -> BugId -> IO History
 getHistory session bid = do
-  let req = newBzRequest session ["bug", intAsText bid, "history"] []
-  sendBzRequest session req
+  let req = newBzRequest session ["bug", show bid, "history"] []
+  sendBzRequest req
 
 -- | Search user names and emails using a substring search.
 searchUsers :: BugzillaSession -> T.Text -> IO [User]
 searchUsers session text = do
   let req = newBzRequest session ["user"] [("match", Just text)]
-  (UserList users) <- sendBzRequest session req
+  (UserList users) <- sendBzRequest req
   return users
 
 -- | Get a user by email.
 getUser :: BugzillaSession -> UserEmail -> IO (Maybe User)
 getUser session user = do
-  let req = newBzRequest session ["user", user] []
-  (UserList users) <- sendBzRequest session req
+  let req = newBzRequest session ["user", T.unpack user] []
+  (UserList users) <- sendBzRequest req
   case users of
     [u] -> return $ Just u
     []  -> return Nothing
@@ -235,8 +224,8 @@ getUser session user = do
 -- | Get a user by user ID.
 getUserById :: BugzillaSession -> UserId -> IO (Maybe User)
 getUserById session uid = do
-  let req = newBzRequest session ["user", intAsText uid] []
-  (UserList users) <- sendBzRequest session req
+  let req = newBzRequest session ["user", show uid] []
+  (UserList users) <- sendBzRequest req
   case users of
     [u] -> return $ Just u
     []  -> return Nothing
