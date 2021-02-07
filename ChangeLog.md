@@ -13,4 +13,4 @@
 - hlint fixes
 
 ## bugzilla 0.2 and older
-See Seth Fowler's original changelog.orig file.
+See Seth Fowler's original changelog.bugzilla file.
