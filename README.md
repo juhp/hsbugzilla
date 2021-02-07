@@ -1,8 +1,12 @@
 # bugzilla-redhat
 
-[![Build Status](https://travis-ci.com/juhp/hsbugzilla.svg?branch=master)](https://travis-ci.com/juhp/hsbugzilla)
+![build](https://github.com/juhp/hsbugzilla/workflows/build/badge.svg)
+[![Hackage](http://img.shields.io/hackage/v/bugzilla-redhat.png)](http://hackage.haskell.org/package/bugzilla-redhat)
+[![Stackage](http://stackage.org/package/bugzilla-redhat/badge/lts)](http://stackage.org/package/bugzilla-redhat)
 
 This is a fork of the Haskell bugzilla native REST API library by Seth Fowler.
+
+See the haddock documentation for more details.
 
 Relevant links:
 - https://bugzilla.redhat.com/docs/en/html/api/index.html

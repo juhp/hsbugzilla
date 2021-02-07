@@ -1,6 +1,6 @@
 # bugzilla-redhat version history
 
-## 0.3.1 (2020-08-xx)
+## 0.3.1 (2021-02-07)
 - export sendBzRequest
 
 ## 0.3.0 (2020-08-05)
