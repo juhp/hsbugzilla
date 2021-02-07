@@ -110,12 +110,16 @@ isEmpty :: FieldType a => Field a -> SearchExpression
 isEmpty = Term . UnaryOp "isempty"
 
 (.&&.) :: SearchExpression -> SearchExpression -> SearchExpression
+(.&&.) (And as) (And bs) = And (as ++ bs)
+(.&&.) (And as) a = And (as ++ [a])
 (.&&.) a (And as) = And (a:as)
 (.&&.) a b        = And [a, b]
 infixr 3 .&&.
 
 (.||.) :: SearchExpression -> SearchExpression -> SearchExpression
+(.||.) (Or as) (Or bs) = Or (as ++ bs)
 (.||.) a (Or as) = Or (a:as)
+(.||.) (Or as) a = Or (as ++ [a])
 (.||.) a b       = Or [a, b]
 infixr 2 .||.
 
