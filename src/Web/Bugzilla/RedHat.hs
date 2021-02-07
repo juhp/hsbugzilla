@@ -10,7 +10,7 @@
 --
 --   A very simple program using this package might look like this:
 --
--- >   ctx <- newBugzillaContext "bugzilla.example.org"
+-- >   ctx <- newBugzillaContext "bugzilla.redhat.com"
 -- >   let session = anonymousSession ctx
 -- >       user = "me@example.org"
 -- >       query = AssignedToField .==. user .&&.
@@ -21,6 +21,7 @@
 --
 --   There's a somewhat more in-depth demo program included with the
 --   source code to this package.
+
 module Web.Bugzilla.RedHat
 ( -- * Connecting to Bugzilla
   newBugzillaContext
