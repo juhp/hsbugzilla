@@ -22,6 +22,7 @@ module Web.Bugzilla.RedHat.Search
 , containsAll
 , changedBefore
 , changedAfter
+, changedSince
 , changedFrom
 , changedTo
 , changedBy
@@ -93,6 +94,9 @@ changedBefore = (Term .) . BinaryOp "changedbefore"
 
 changedAfter :: FieldType a => Field a -> UTCTime -> SearchExpression
 changedAfter = (Term .) . BinaryOp "changedafter"
+
+changedSince :: UTCTime -> SearchExpression
+changedSince ts = Term $ EqTerm (CustomField "chfieldfrom") ts
 
 changedFrom :: FieldType a => Field a -> a -> SearchExpression
 changedFrom = (Term .) . BinaryOp "changedfrom"
