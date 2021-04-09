@@ -24,6 +24,7 @@ import Control.Monad (mzero)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Resource (runResourceT)
 import Data.Aeson
+import Data.Maybe (fromMaybe)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 #if !MIN_VERSION_base(4,11,0)
@@ -32,14 +33,13 @@ import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Typeable
-import Network.HTTP.Conduit (Manager, Request(..), Response(..), defaultRequest, host, httpLbs, path, queryString, secure)
+import Network.HTTP.Conduit (Manager, Request(..), Response(..), defaultRequest, host, httpLbs, path, queryString, secure, parseRequest)
 import Network.HTTP.Types.URI (QueryText, encodePathSegments, renderQueryText)
 
 type BugzillaServer  = T.Text
 
 -- | Holds information about a 'BugzillaServer' and manages outgoing
--- connections. You can use 'newBugzillaContext' or
--- 'withBugzillaContext' to create one.
+-- connections. You can use 'newBugzillaContext' to create one.
 data BugzillaContext = BugzillaContext
   { bzServer  :: BugzillaServer
   , bzManager :: Manager
@@ -81,12 +81,18 @@ sslRequest =
 
 newBzRequest :: BugzillaSession -> [T.Text] -> QueryText -> Request
 newBzRequest session methodParts query =
-    sslRequest {
-      host        = TE.encodeUtf8 . bzServer . bzContext $ session,
+    baseRequest {
       path        = toByteString $ encodePathSegments $ "rest" : methodParts,
       queryString = toByteString $ renderQueryText True queryWithToken
     }
   where
+    -- Try to parse the bzServer first, if it has a scheme then use it as the base request,
+    -- otherwise force a secure ssl request.
+    baseRequest :: Request
+    baseRequest = fromMaybe (sslRequest { host = serverBytes }) (parseRequest serverStr)
+    serverBytes = TE.encodeUtf8 serverTxt
+    serverStr = T.unpack serverTxt
+    serverTxt = bzServer . bzContext $ session
     queryWithToken = case session of
                        AnonymousSession _                   -> query
                        LoginSession _ (BugzillaToken token) -> ("token", Just token) : query
