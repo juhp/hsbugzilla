@@ -18,6 +18,8 @@ module Web.Bugzilla.RedHat.Internal.Types
 , User (..)
 , UserList (..)
 , Flag (..)
+, ExternalType (..)
+, ExternalBug (..)
 , Bug (..)
 , BugList (..)
 , BugIdList (..)
@@ -338,6 +340,46 @@ instance FromJSON Flag where
          <*> v .:? "requestee"
   parseJSON _ = mzero
 
+-- | An external bug type
+data ExternalType = ExternalType
+  { externalTypeDescription :: T.Text
+  , externalTypeUrl         :: T.Text
+  , externalTypeId          :: Int
+  , externalTypeType        :: T.Text
+  , externalTypeFullUrl     :: T.Text
+  } deriving (Eq, Ord, Show)
+
+instance FromJSON ExternalType where
+  parseJSON (Object v) =
+    ExternalType <$> v .: "description"
+                 <*> v .: "url"
+                 <*> v .: "id"
+                 <*> v .: "type"
+                 <*> v .: "full_url"
+  parseJSON _ = mzero
+
+-- | An external bug.
+data ExternalBug = ExternalBug
+  { externalDescription    :: T.Text
+  , externalBzId           :: Int
+  , externalPriority       :: T.Text
+  , externalBugId          :: T.Text
+  , externalStatus         :: T.Text
+  , externalId             :: Int
+  , externalType           :: ExternalType
+  } deriving (Eq, Ord, Show)
+
+instance FromJSON ExternalBug where
+  parseJSON (Object v) =
+    ExternalBug <$> v .: "ext_description"
+                <*> v .: "ext_bz_id"
+                <*> v .: "ext_priority"
+                <*> v .: "ext_bz_bug_id"
+                <*> v .: "ext_status"
+                <*> v .: "id"
+                <*> v .: "type"
+  parseJSON _ = mzero
+
 -- | A Bugzilla bug.
 data Bug = Bug
   { bugId                  :: !BugId
@@ -377,6 +419,7 @@ data Bug = Bug
   , bugVersion             :: [T.Text]
   , bugWhiteboard          :: T.Text
   , bugCustomFields        :: H.HashMap T.Text T.Text
+  , bugExternalBugs        :: Maybe [ExternalBug]
   } deriving (Eq, Show)
 
 instance FromJSON Bug where
@@ -418,6 +461,7 @@ instance FromJSON Bug where
           <*> v .: "version"
           <*> v .: "whiteboard"
           <*> pure (customFields v)
+          <*> v .:? "external_bugs"
   parseJSON _ = mzero
 
 customFields :: Object -> H.HashMap T.Text T.Text
