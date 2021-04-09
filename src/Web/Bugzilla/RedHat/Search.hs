@@ -27,6 +27,7 @@ module Web.Bugzilla.RedHat.Search
 , changedBy
 , contentMatches
 , isEmpty
+, isNotEmpty
 , (.&&.)
 , (.||.)
 , not'
@@ -108,6 +109,9 @@ contentMatches = Term . BinaryOp "matches" ContentField
 
 isEmpty :: FieldType a => Field a -> SearchExpression
 isEmpty = Term . UnaryOp "isempty"
+
+isNotEmpty :: FieldType a => Field a -> SearchExpression
+isNotEmpty = Term . UnaryOp "isnotempty"
 
 (.&&.) :: SearchExpression -> SearchExpression -> SearchExpression
 (.&&.) (And as) (And bs) = And (as ++ bs)
