@@ -40,6 +40,8 @@ module Web.Bugzilla.RedHat
 , searchBugsWithLimit
 , searchBugsWithLimit'
 , getBug
+, getBugAll
+, getBugIncludeFields
 , getAttachment
 , getAttachments
 , getComments
@@ -187,14 +189,24 @@ searchBugsWithLimit' session limit offset search = do
 
 -- | Retrieve a bug by bug number.
 getBug :: BugzillaSession -> BugId -> IO (Maybe Bug)
-getBug session bid = do
-  let req = newBzRequest session ["bug", intAsText bid] []
+getBug session bid = getBugIncludeFields session bid []
+
+-- | Retrieve all bug field by bug number
+getBugAll :: BugzillaSession -> BugId -> IO (Maybe Bug)
+getBugAll session bid = getBugIncludeFields session bid ["_all"]
+
+-- | Retrieve a bug by bug number with fields
+getBugIncludeFields :: BugzillaSession -> BugId -> [T.Text] -> IO (Maybe Bug)
+getBugIncludeFields session bid includeFields = do
+  let req = newBzRequest session ["bug", intAsText bid] query
   (BugList bugs) <- sendBzRequest session req
   case bugs of
     [bug] -> return $ Just bug
     []    -> return Nothing
     _     -> throw $ BugzillaUnexpectedValue
                      "Request for a single bug returned multiple bugs"
+  where
+    query = map (\f -> ("include_fields", Just f)) includeFields
 
 -- | Retrieve a bug by attachment number.
 getAttachment :: BugzillaSession -> AttachmentId -> IO (Maybe Attachment)
