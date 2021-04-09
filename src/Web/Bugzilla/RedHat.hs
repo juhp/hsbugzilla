@@ -35,6 +35,7 @@ module Web.Bugzilla.RedHat
 
   -- * Querying Bugzilla
 , searchBugs
+, searchBugsAll
 , searchBugs'
 , searchBugsWithLimit
 , searchBugsWithLimit'
@@ -75,6 +76,7 @@ module Web.Bugzilla.RedHat
 
 import Control.Exception (throw, try)
 import Control.Monad.IO.Class (liftIO)
+import Data.Aeson (FromJSON)
 import qualified Data.Text as T
 import Network.Connection (TLSSettings(..))
 import Network.HTTP.Conduit (mkManagerSettings, newManager)
@@ -119,9 +121,13 @@ intAsText = T.pack . show
 -- can be constructed conveniently using the operators in "Web.Bugzilla.Search".
 searchBugs :: BugzillaSession -> SearchExpression -> IO [Bug]
 searchBugs session search = do
-  let searchQuery = evalSearchExpr search
-      req = newBzRequest session ["bug"] searchQuery
-  (BugList bugs) <- sendBzRequest session req
+  BugList bugs <- doSearchBugs session search Nothing
+  return bugs
+
+-- | Similar to 'searchBugs', but return _all fields.
+searchBugsAll :: BugzillaSession -> SearchExpression -> IO [Bug]
+searchBugsAll session search = do
+  BugList bugs <- doSearchBugs session search (Just "_all")
   return bugs
 
 -- | Like 'searchBugs', but returns a list of 'BugId's. You can
@@ -132,11 +138,17 @@ searchBugs session search = do
 -- set of bugs returned by a query has changed.
 searchBugs' :: BugzillaSession -> SearchExpression -> IO [BugId]
 searchBugs' session search = do
-  let fieldsQuery = [("include_fields", Just "id")]
+  BugIdList bugs <- doSearchBugs session search (Just "id")
+  return bugs
+
+doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe T.Text -> IO a
+doSearchBugs session search includeField = do
+  let fieldsQuery = case includeField of
+        Nothing -> []
+        Just field -> [("include_fields", Just field)]
       searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] (fieldsQuery ++ searchQuery)
-  (BugIdList bugs) <- sendBzRequest session req
-  return bugs
+  sendBzRequest session req
 
 -- | Search Bugzilla and returns a limited number of results. You can
 --   call this repeatedly and use 'offset' to retrieve the results of
