@@ -38,6 +38,7 @@ module Web.Bugzilla.RedHat
 , searchBugsAll
 , searchBugs'
 , searchBugsWithLimit
+, searchBugsAllWithLimit
 , searchBugsWithLimit'
 , getBug
 , getBugAll
@@ -123,13 +124,13 @@ intAsText = T.pack . show
 -- can be constructed conveniently using the operators in "Web.Bugzilla.Search".
 searchBugs :: BugzillaSession -> SearchExpression -> IO [Bug]
 searchBugs session search = do
-  BugList bugs <- doSearchBugs session search Nothing
+  BugList bugs <- doSearchBugs session search Nothing Nothing
   return bugs
 
 -- | Similar to 'searchBugs', but return _all fields.
 searchBugsAll :: BugzillaSession -> SearchExpression -> IO [Bug]
 searchBugsAll session search = do
-  BugList bugs <- doSearchBugs session search (Just "_all")
+  BugList bugs <- doSearchBugs session search (Just "_all") Nothing
   return bugs
 
 -- | Like 'searchBugs', but returns a list of 'BugId's. You can
@@ -140,16 +141,20 @@ searchBugsAll session search = do
 -- set of bugs returned by a query has changed.
 searchBugs' :: BugzillaSession -> SearchExpression -> IO [BugId]
 searchBugs' session search = do
-  BugIdList bugs <- doSearchBugs session search (Just "id")
+  BugIdList bugs <- doSearchBugs session search (Just "id") Nothing
   return bugs
 
-doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe T.Text -> IO a
-doSearchBugs session search includeField = do
+doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe T.Text -> Maybe (Int, Int) -> IO a
+doSearchBugs session search includeField limits = do
   let fieldsQuery = case includeField of
         Nothing -> []
         Just field -> [("include_fields", Just field)]
+      limitQuery = case limits of
+        Nothing -> []
+        Just (limit, offset) -> [("limit", Just $ intAsText limit),
+                                 ("offset", Just $ intAsText offset)]
       searchQuery = evalSearchExpr search
-      req = newBzRequest session ["bug"] (fieldsQuery ++ searchQuery)
+      req = newBzRequest session ["bug"] (limitQuery ++ fieldsQuery ++ searchQuery)
   sendBzRequest session req
 
 -- | Search Bugzilla and returns a limited number of results. You can
@@ -164,11 +169,17 @@ searchBugsWithLimit :: BugzillaSession
                     -> SearchExpression
                     -> IO [Bug]
 searchBugsWithLimit session limit offset search = do
-  let limitQuery = [("limit", Just $ intAsText limit),
-                    ("offset", Just $ intAsText offset)]
-      searchQuery = evalSearchExpr search
-      req = newBzRequest session ["bug"] (limitQuery ++ searchQuery)
-  (BugList bugs) <- sendBzRequest session req
+  BugList bugs <- doSearchBugs session search Nothing (Just (limit, offset))
+  return bugs
+
+-- | Similar to 'searchBugsWithLimit', but return _all fields.
+searchBugsAllWithLimit :: BugzillaSession
+                       -> Int  -- ^ The maximum number of results to return.
+                       -> Int  -- ^ The offset from the first result to start from.
+                       -> SearchExpression
+                       -> IO [Bug]
+searchBugsAllWithLimit session limit offset search = do
+  BugList bugs <- doSearchBugs session search (Just "_all") (Just (limit, offset))
   return bugs
 
 -- | Like 'searchBugsWithLimit', but returns a list of 'BugId's. See
@@ -179,12 +190,7 @@ searchBugsWithLimit' :: BugzillaSession
                      -> SearchExpression
                      -> IO [BugId]
 searchBugsWithLimit' session limit offset search = do
-  let fieldsQuery = [("include_fields", Just "id")]
-      limitQuery = [("limit", Just $ intAsText limit),
-                    ("offset", Just $ intAsText offset)]
-      searchQuery = evalSearchExpr search
-      req = newBzRequest session ["bug"] (fieldsQuery ++ limitQuery ++ searchQuery)
-  (BugIdList bugs) <- sendBzRequest session req
+  BugIdList bugs <- doSearchBugs session search (Just "id") (Just (limit, offset))
   return bugs
 
 -- | Retrieve a bug by bug number.
