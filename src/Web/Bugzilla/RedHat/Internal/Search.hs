@@ -37,6 +37,7 @@ instance FieldType a => FieldType [a] where
 data SearchTerm where
   UnaryOp  :: FieldType a => T.Text -> Field a -> SearchTerm
   BinaryOp :: (FieldType a, FieldType b) => T.Text -> Field a -> b -> SearchTerm
+  EqTerm   :: (FieldType a, FieldType b) => Field a -> b -> SearchTerm
 
 -- | A Boolean expression which can be used to query Bugzilla.
 data SearchExpression
@@ -56,6 +57,7 @@ termQuery t f o v = [taggedQueryPart t 'f' (searchFieldName f),
 evalSearchTerm :: Int -> SearchTerm -> [QueryPart]
 evalSearchTerm t (UnaryOp op field)          = termQuery t field op ("" :: T.Text)
 evalSearchTerm t (BinaryOp op field val)     = termQuery t field op val
+evalSearchTerm _ (EqTerm field val)          = [(searchFieldName field, Just . fvAsText $ val)]
 
 evalSearchExpr :: SearchExpression -> [QueryPart]
 evalSearchExpr e = snd $ evalSearchExpr' 1 e
