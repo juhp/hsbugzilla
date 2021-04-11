@@ -1,5 +1,8 @@
 # bugzilla-redhat version history
 
+## next
+- BugillaServer can now be fully qualified
+
 ## 0.3.1 (2021-02-07)
 - export sendBzRequest
 
