@@ -31,6 +31,8 @@ module Web.Bugzilla.RedHat.Internal.Types
 , HistoryEvent (..)
 , Change (..)
 , Modification (..)
+, SearchOrder (..)
+, orderText
 , fieldName
 , searchFieldName
 ) where
@@ -62,6 +64,16 @@ type EventId      = Int
 type FlagId       = Int
 type FlagType     = Int
 type UserEmail    = T.Text
+
+-- | Search result order
+data SearchOrder = BugNumber | Importance | Assignee | LastChanged
+
+-- | Provides the Text value of a search order
+orderText :: SearchOrder -> T.Text
+orderText LastChanged = "Last Changed"
+orderText Importance = "Importance"
+orderText BugNumber = "Bug Number"
+orderText Assignee = "Assignee"
 
 -- | A field which you can search by using 'Web.Bugzilla.searchBugs' or track
 --   changes to using 'Web.Bugzilla.getHistory'. To get a human-readable name for
