@@ -71,6 +71,7 @@ module Web.Bugzilla.RedHat
 , HistoryEvent (..)
 , Change (..)
 , Modification (..)
+, SearchOrder (..)
 , fieldName
 
 , BugzillaException (..)
@@ -121,15 +122,15 @@ intAsText = T.pack . show
 
 -- | Searches Bugzilla and returns a list of 'Bug's. The 'SearchExpression'
 -- can be constructed conveniently using the operators in "Web.Bugzilla.Search".
-searchBugs :: BugzillaSession -> SearchExpression -> IO [Bug]
-searchBugs session search = do
-  BugList bugs <- doSearchBugs session search Nothing
+searchBugs :: BugzillaSession -> SearchExpression -> Maybe SearchOrder -> IO [Bug]
+searchBugs session search order = do
+  BugList bugs <- doSearchBugs session search order Nothing
   return bugs
 
 -- | Similar to 'searchBugs', but return _all fields.
-searchBugsAll :: BugzillaSession -> SearchExpression -> IO [Bug]
-searchBugsAll session search = do
-  BugList bugs <- doSearchBugs session search (Just "_all")
+searchBugsAll :: BugzillaSession -> SearchExpression -> Maybe SearchOrder -> IO [Bug]
+searchBugsAll session search order = do
+  BugList bugs <- doSearchBugs session search order (Just "_all")
   return bugs
 
 -- | Like 'searchBugs', but returns a list of 'BugId's. You can
@@ -138,18 +139,21 @@ searchBugsAll session search = do
 -- 'searchBugs'. 'searchBugs'' is suitable for cases where you won't need to call
 -- 'getBug' most of the time - for example, polling to determine whether the
 -- set of bugs returned by a query has changed.
-searchBugs' :: BugzillaSession -> SearchExpression -> IO [BugId]
-searchBugs' session search = do
-  BugIdList bugs <- doSearchBugs session search (Just "id")
+searchBugs' :: BugzillaSession -> SearchExpression -> Maybe SearchOrder -> IO [BugId]
+searchBugs' session search order = do
+  BugIdList bugs <- doSearchBugs session search order (Just "id")
   return bugs
 
-doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe T.Text -> IO a
-doSearchBugs session search includeField = do
+doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe SearchOrder -> Maybe T.Text -> IO a
+doSearchBugs session search order includeField = do
   let fieldsQuery = case includeField of
         Nothing -> []
         Just field -> [("include_fields", Just field)]
+      orderField = case order of
+        Nothing -> []
+        Just order' -> [("order", Just (orderText order'))]
       searchQuery = evalSearchExpr search
-      req = newBzRequest session ["bug"] (fieldsQuery ++ searchQuery)
+      req = newBzRequest session ["bug"] (orderField ++ fieldsQuery ++ searchQuery)
   sendBzRequest session req
 
 -- | Search Bugzilla and returns a limited number of results. You can
