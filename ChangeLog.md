@@ -3,7 +3,7 @@
 ## next
 - BugillaServer can now be fully qualified
 - Add isNotEmpty search expression operator
-- Add searchBugsAll and getBugAll to get all the bug fields
+- Add searchBugsAllWithLimit, searchBugsAll and getBugAll to get all the bug fields
 - Change Bug to include ExternalBugs information
 
 ## 0.3.1 (2021-02-07)
