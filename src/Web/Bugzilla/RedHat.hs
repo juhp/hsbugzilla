@@ -66,6 +66,8 @@ module Web.Bugzilla.RedHat
 , User (..)
 , Flag (..)
 , Bug (..)
+, ExternalBug (..)
+, ExternalType (..)
 , Attachment (..)
 , Comment (..)
 , History (..)
