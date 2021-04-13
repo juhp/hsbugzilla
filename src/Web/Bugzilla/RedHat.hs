@@ -42,7 +42,6 @@ module Web.Bugzilla.RedHat
 , searchBugsWithLimit'
 , getBug
 , getBugAll
-, getBugIncludeFields
 , getAttachment
 , getAttachments
 , getComments
