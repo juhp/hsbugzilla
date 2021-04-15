@@ -5,6 +5,7 @@
 module Web.Bugzilla.RedHat.Internal.Network
 ( BugzillaServer
 , BugzillaContext (..)
+, BugzillaApikey (..)
 , BugzillaToken (..)
 , BugzillaSession (..)
 , BugzillaException (..)
@@ -47,6 +48,8 @@ data BugzillaContext = BugzillaContext
 
 newtype BugzillaToken = BugzillaToken T.Text
 
+newtype BugzillaApikey = BugzillaApikey T.Text
+
 instance FromJSON BugzillaToken where
   parseJSON (Object v) = BugzillaToken <$> v .: "token"
   parseJSON _          = mzero
@@ -55,10 +58,12 @@ instance FromJSON BugzillaToken where
 -- 'loginSession', as appropriate, to create one.
 data BugzillaSession = AnonymousSession BugzillaContext
                      | LoginSession BugzillaContext BugzillaToken
+                     | ApikeySession BugzillaContext BugzillaApikey
 
 bzContext :: BugzillaSession -> BugzillaContext
 bzContext (AnonymousSession ctx) = ctx
 bzContext (LoginSession ctx _)   = ctx
+bzContext (ApikeySession ctx _)   = ctx
 
 data BugzillaException
   = BugzillaJSONParseError String
@@ -94,8 +99,9 @@ newBzRequest session methodParts query =
     serverStr = T.unpack serverTxt
     serverTxt = bzServer . bzContext $ session
     queryWithToken = case session of
-                       AnonymousSession _                   -> query
-                       LoginSession _ (BugzillaToken token) -> ("token", Just token) : query
+                       AnonymousSession _                     -> query
+                       LoginSession _ (BugzillaToken token)   -> ("token", Just token) : query
+                       ApikeySession _ (BugzillaApikey token) -> ("api_key", Just token) : query
 
 data BzError = BzError Int String
                deriving (Eq, Show)

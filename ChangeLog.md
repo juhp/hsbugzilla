@@ -2,6 +2,7 @@
 
 ## next
 - BugillaServer can now be fully qualified
+- Add apikeySession to support api_key auth
 - Add isNotEmpty search expression operator
 - Add searchBugsAllWithLimit, searchBugsAll and getBugAll to get all the bug fields
 - Change Bug to include ExternalBugs information
