@@ -23,6 +23,8 @@ module Web.Bugzilla.RedHat.Search
 , changedBefore
 , changedAfter
 , changedSince
+, changedUntil
+, changedRange
 , changedFrom
 , changedTo
 , changedBy
@@ -96,8 +98,17 @@ changedBefore = (Term .) . BinaryOp "changedbefore"
 changedAfter :: FieldType a => Field a -> UTCTime -> SearchExpression
 changedAfter = (Term .) . BinaryOp "changedafter"
 
+-- | Filter bug changed since UTCTime
 changedSince :: UTCTime -> SearchExpression
 changedSince ts = Term $ EqTerm (CustomField "chfieldfrom") ts
+
+-- | Filter bug changed until UTCTime
+changedUntil :: UTCTime -> SearchExpression
+changedUntil ts = Term $ EqTerm (CustomField "chfieldto") ts
+
+-- | Filter bug changed in range
+changedRange :: UTCTime -> UTCTime -> SearchExpression
+changedRange from to = changedSince from .&&. changedUntil to
 
 changedFrom :: FieldType a => Field a -> a -> SearchExpression
 changedFrom = (Term .) . BinaryOp "changedfrom"
