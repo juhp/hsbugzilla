@@ -55,6 +55,7 @@ module Web.Bugzilla.RedHat
 , sendBzRequest
 , intAsText
 
+, Request
 , BugId
 , AttachmentId
 , CommentId
