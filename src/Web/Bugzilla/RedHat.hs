@@ -26,12 +26,14 @@ module Web.Bugzilla.RedHat
 ( -- * Connecting to Bugzilla
   newBugzillaContext
 , loginSession
+, apikeySession
 , anonymousSession
 
 , BugzillaServer
 , BugzillaContext
 , BugzillaSession (..)
 , BugzillaToken (..)
+, BugzillaApikey (..)
 
   -- * Querying Bugzilla
 , searchBugs
@@ -112,6 +114,10 @@ loginSession ctx user password = do
              Left (BugzillaAPIError 300 _) -> Nothing
              Left e                        -> throw e
              Right token                   -> Just $ LoginSession ctx token
+
+-- | Creates a 'BugzillaSession' using the provided api key.
+apikeySession :: BugzillaContext -> BugzillaApikey -> BugzillaSession
+apikeySession = ApikeySession
 
 -- | Creates an anonymous 'BugzillaSession'. Note that some content
 --   will be hidden by Bugzilla when you make queries in this state.
