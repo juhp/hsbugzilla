@@ -5,6 +5,7 @@
 - Add isNotEmpty search expression operator
 - Add searchBugsAllWithLimit, searchBugsAll and getBugAll to get all the bug fields
 - Change Bug to include ExternalBugs information
+- Export Request
 
 ## 0.3.1 (2021-02-07)
 - export sendBzRequest
