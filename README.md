@@ -10,3 +10,12 @@ See the haddock documentation for more details.
 
 Relevant links:
 - https://bugzilla.redhat.com/docs/en/html/api/index.html
+
+## Contributing
+Bug reports, feedback, and fixes are welcome.
+
+Thanks to the contributors!
+
+<a href="https://github.com/juhp/hsbugzilla/graphs/contributors">
+  <img src="https://contributors-img.web.app/image?repo=juhp/hsbugzilla" />
+</a>
