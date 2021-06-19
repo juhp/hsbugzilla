@@ -35,7 +35,7 @@ library
   other-modules:       Web.Bugzilla.RedHat.Internal.Network,
                        Web.Bugzilla.RedHat.Internal.Search,
                        Web.Bugzilla.RedHat.Internal.Types
-  build-depends:       base >=4.6 && <4.15,
+  build-depends:       base >=4.6 && <5,
                        aeson >=0.7 && <1.6,
                        blaze-builder >=0.3 && <0.5,
                        bytestring >=0.10 && <0.11,
@@ -61,7 +61,7 @@ executable bugzilla
 
   ghc-options:         -Wall
   main-is:             BugzillaDemo.hs
-  build-depends:       base >=4.6 && <4.15,
+  build-depends:       base >=4.6 && <5,
                        bugzilla-redhat,
                        containers >=0.5 && <0.7,
                        text >=0.11 && <1.3,
@@ -73,7 +73,7 @@ test-suite bugzilla-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       base >=4.6 && <4.15,
+  build-depends:       base >=4.6 && <5,
                        aeson >=0.7 && <1.6,
                        bugzilla-redhat,
                        hspec >=2.0 && <3.0,
