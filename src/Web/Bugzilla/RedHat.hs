@@ -10,7 +10,7 @@
 --
 --   A very simple program using this package might look like this:
 --
--- >   ctx <- newBugzillaContext "bugzilla.redhat.com"
+-- >   ctx <- newBugzillaContext "https://bugzilla.redhat.com"
 -- >   let session = anonymousSession ctx
 -- >       user = "me@example.org"
 -- >       query = AssignedToField .==. user .&&.
