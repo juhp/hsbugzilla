@@ -79,6 +79,7 @@ module Web.Bugzilla.RedHat
 , fieldName
 
 , BugzillaException (..)
+, BugFields (..)
 ) where
 
 import Control.Exception (throw, try)

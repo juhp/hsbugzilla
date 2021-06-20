@@ -1,8 +1,11 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 
 module Web.Bugzilla.RedHat.Internal.Types
@@ -33,6 +36,7 @@ module Web.Bugzilla.RedHat.Internal.Types
 , Modification (..)
 , fieldName
 , searchFieldName
+, BugFields (..)
 ) where
 
 #if !MIN_VERSION_base(4,8,0)
@@ -53,6 +57,7 @@ import qualified Data.Text.Lazy.Builder as TLB
 import qualified Data.Text.Read as TR
 import qualified Data.Vector as V
 import Data.Time.Clock (UTCTime(..))
+import GHC.Generics
 
 type BugId        = Int
 type AttachmentId = Int
@@ -727,3 +732,38 @@ instance ToModification T.Text Bool where
 
 instance ToModification T.Text [T.Text] where
   toMod v = return . Just $ T.splitOn ", " v
+
+-- | Generic instance to derive include_fields from the record
+class BugFields' f where
+  getFields' :: f p -> [T.Text]
+
+-- The constant fields
+instance BugFields' (K1 f a) where
+  getFields' (K1 _) = ["value"]
+
+instance (BugFields' f) => BugFields' (M1 D t f) where
+  getFields' (M1 x) = getFields' x
+
+instance
+  (Constructor c, BugFields' fields) =>
+  BugFields' (M1 C c fields)
+  where
+  getFields' (M1 x) = getFields' x
+
+instance
+  (Selector s, BugFields' primitive) =>
+  BugFields' (M1 S s primitive)
+  where
+  getFields' x = [T.pack $ selName x]
+
+instance
+  (BugFields' fieldsLeft, BugFields' fieldsRight) =>
+  BugFields' (fieldsLeft :*: fieldsRight)
+  where
+  getFields' x = case x of
+    fl :*: fr -> getFields' fl <> getFields' fr
+
+class BugFields a where
+  getFields :: a -> [T.Text]
+  default getFields :: (Generic a, BugFields' (Rep a)) => a -> [T.Text]
+  getFields x = getFields' (from x)

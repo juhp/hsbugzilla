@@ -1,13 +1,26 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
 module Main (main) where
 
+import GHC.Generics (Generic)
 import Test.Hspec
+import Web.Bugzilla.RedHat (BugFields (getFields))
 import Web.Bugzilla.RedHat.Search
 
 main :: IO ()
 main = hspec spec
+
+-- | The data type containing the included fields
+data BugWithScore = BugWithScore
+  { bugId :: Int,
+    bugSummary :: String,
+    bugPmScore :: Int
+  }
+  deriving (Show, Eq, Generic)
+
+instance BugFields BugWithScore
 
 spec :: Spec
 spec = describe "unit tests" $ do
@@ -34,3 +47,6 @@ spec = describe "unit tests" $ do
                      ("chfieldfrom", Just "2021-04-01T00:00:00Z"),
                      ("chfieldto", Just "2021-04-13T00:00:00Z")
                    ]
+    it "derive include_fields" $ do
+      getFields (BugWithScore 42 "a bug" 9001)
+        `shouldBe` ["bugId", "bugSummary", "bugPmScore"]
