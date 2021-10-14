@@ -1,5 +1,8 @@
 # bugzilla-redhat version history
 
+## 0.3.3 (2021-10-14)
+- support building with aeson-2.0
+
 ## 0.3.2 (2021-06-19)
 - BugillaServer can now be fully qualified (@TristanCacqueray)
 - Add apikeySession to support api_key auth (@TristanCacqueray)
