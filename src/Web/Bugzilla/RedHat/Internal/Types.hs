@@ -46,7 +46,12 @@ import Data.Aeson.Text
 import Data.Aeson.Encode
 #endif
 import Data.Aeson.Types
-import qualified Data.HashMap.Strict as H
+#if MIN_VERSION_aeson(2,0,0)
+import Data.Aeson.Key
+import qualified Data.Aeson.KeyMap as M
+#else
+import qualified Data.HashMap.Strict as M
+#endif
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
@@ -418,8 +423,13 @@ data Bug = Bug
   , bugUrl                 :: T.Text
   , bugVersion             :: [T.Text]
   , bugWhiteboard          :: T.Text
-  , bugCustomFields        :: H.HashMap T.Text T.Text
-  , bugExternalBugs        :: Maybe [ExternalBug]
+  , bugCustomFields        ::
+#if MIN_VERSION_aeson(2,0,0)
+                              M.KeyMap T.Text
+#else
+                              M.HashMap T.Text T.Text
+#endif
+, bugExternalBugs        :: Maybe [ExternalBug]
   } deriving (Eq, Show)
 
 instance FromJSON Bug where
@@ -464,9 +474,14 @@ instance FromJSON Bug where
           <*> v .:? "external_bugs"
   parseJSON _ = mzero
 
-customFields :: Object -> H.HashMap T.Text T.Text
-customFields = H.map stringifyCustomFields
-             . H.filterWithKey filterCustomFields
+customFields :: Object ->
+#if MIN_VERSION_aeson(2,0,0)
+                M.KeyMap T.Text
+#else
+                M.HashMap T.Text T.Text
+#endif
+customFields = M.map stringifyCustomFields
+             . M.filterWithKey filterCustomFields
   where
     stringifyCustomFields :: Value -> T.Text
     stringifyCustomFields (String t) = t
@@ -477,7 +492,10 @@ customFields = H.map stringifyCustomFields
                                      . toJSON
                                      $ v
 
-    filterCustomFields k _ = "cf_" `T.isPrefixOf` k
+    filterCustomFields k _ = "cf_" `T.isPrefixOf` toText k
+#if !MIN_VERSION_aeson(2,0,0)
+      where toText = id
+#endif
 
 newtype BugList = BugList [Bug]
                deriving (Eq, Show)
@@ -544,8 +562,8 @@ instance FromJSON AttachmentList where
     attachmentsVal <- v .: "attachments"
     bugsVal <- v .: "bugs"
     case (attachmentsVal, bugsVal) of
-      (Object (H.toList -> [(_, as)]), _) -> AttachmentList . (:[]) <$> parseJSON as
-      (_, Object (H.toList -> [(_, as)])) -> AttachmentList <$> parseJSON as
+      (Object (M.toList -> [(_, as)]), _) -> AttachmentList . (:[]) <$> parseJSON as
+      (_, Object (M.toList -> [(_, as)])) -> AttachmentList <$> parseJSON as
       _                                   -> mzero
   parseJSON _ = mzero
 
@@ -581,7 +599,7 @@ instance FromJSON CommentList where
   parseJSON (Object v) = do
     bugsVal <- v .: "bugs"
     case bugsVal of
-      Object (H.toList -> [(_, cs)]) ->
+      Object (M.toList -> [(_, cs)]) ->
         do comments <- withObject "comments" (.: "comments") cs
            withArray "comment list" (\a -> CommentList <$> parseJSON (addCount a)) comments
       _ -> mzero
@@ -594,7 +612,7 @@ addCount :: V.Vector Value -> Value
 addCount vs = Array $ V.zipWith addCount' (V.enumFromN 0 $ V.length vs) vs
  where
    addCount' :: Int -> Value -> Value
-   addCount' c (Object v) = Object $ H.insert "count" (Number $ fromIntegral c) v
+   addCount' c (Object v) = Object $ M.insert "count" (Number $ fromIntegral c) v
    addCount' _ v          = v
 
 -- | History information for a bug.
