@@ -1,5 +1,17 @@
 # bugzilla-redhat version history
 
+## 0.4.0 (2022-02-20)
+- rename Web.Bugzilla.RedHat to Web.RedHatBugzilla
+- use Network.HTTP.Simple global session Manager
+- from 28 Feb 2022 Red Hat Bugzilla only allows API key authentication:
+- remove newBugzillaContext and BugzillaContext
+- drop loginSession and also BugzillaToken
+- bzServer replaces bzContext
+- newBzRequest now puts API key in Authorization header
+- sendBzRequest no longer takes a session argument
+- rename BugzillaApikey to BugzillaApiKey
+- rename ApikeySession to ApiKeySession
+
 ## 0.3.3 (2021-10-14)
 - support building with aeson-2.0
 

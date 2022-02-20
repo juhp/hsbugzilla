@@ -8,8 +8,7 @@
 --
 --   A very simple program using this package might look like this:
 --
--- >   ctx <- newBugzillaContext "https://bugzilla.redhat.com"
--- >   let session = anonymousSession ctx
+-- >   let session = anonymousSession "https://bugzilla.redhat.com"
 -- >       user = "me@example.org"
 -- >       query = AssignedToField .==. user .&&.
 -- >               FlagRequesteeField .==. user .&&.
@@ -17,7 +16,7 @@
 -- >   bugs <- searchBugs session query
 -- >   mapM_ (putStrLn . show . bugSummary) bugs
 --
---   There's a somewhat more in-depth demo program included with the
+--   There's a more in-depth demo program included with the
 --   source code to this package.
 
 module Web.RedHatBugzilla
