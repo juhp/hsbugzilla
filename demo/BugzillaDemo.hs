@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-import Control.Exception (bracket)
 import Control.Monad
 import Data.Maybe
 import qualified Data.Text as T
@@ -9,25 +8,23 @@ import Data.Time.Clock (diffUTCTime)
 import System.Environment (getArgs)
 import System.IO
 
-import Web.Bugzilla.RedHat
-import Web.Bugzilla.RedHat.Search
+import Web.RedHatBugzilla
+import Web.RedHatBugzilla.Search
 
 main :: IO ()
-main = dispatch Nothing Nothing =<< getArgs
+main = dispatch Nothing =<< getArgs
 
-dispatch :: Maybe UserEmail -> Maybe BugzillaServer -> [String] -> IO ()
-dispatch Nothing s ("--login" : user : as)    = dispatch (Just $ T.pack user) s as
-dispatch l Nothing ("--server" : server : as) = dispatch l (Just $ T.pack server) as
-dispatch l s ["--assigned-to", user]          = withBz l s $ doAssignedTo (T.pack user)
-dispatch l s ["--assigned-to-brief", user]    = withBz l s $ doAssignedToBrief (T.pack user)
-dispatch l s ["--requests", user]             = withBz l s $ doRequests (T.pack user)
-dispatch l s ["--history", bug, n]            = withBz l s $ doHistory (read bug) (read n)
-dispatch _ _ _                                = usage
+dispatch :: Maybe BugzillaServer -> [String] -> IO ()
+dispatch Nothing ("--server" : server : as) = dispatch (Just $ T.pack server) as
+dispatch s ["--assigned-to", user]          = withBz s $ doAssignedTo (T.pack user)
+dispatch s ["--assigned-to-brief", user]    = withBz s $ doAssignedToBrief (T.pack user)
+dispatch s ["--requests", user]             = withBz s $ doRequests (T.pack user)
+dispatch s ["--history", bug, n]            = withBz s $ doHistory (read bug) (read n)
+dispatch _ _                                = usage
 
 usage :: IO ()
 usage = hPutStrLn stderr "Connection options:"
      >> hPutStrLn stderr "  --server [domain name] - REQUIRED. The Bugzilla server to access."
-     >> hPutStrLn stderr "  --login [user email]   - The user to log in with."
      >> hPutStrLn stderr ""
      >> hPutStrLn stderr "Bugzilla queries:"
      >> hPutStrLn stderr "  --assigned-to [user email] - List bugs assigned to the user."
@@ -35,22 +32,13 @@ usage = hPutStrLn stderr "Connection options:"
      >> hPutStrLn stderr "  --requests [user email]    - List requests for the user."
      >> hPutStrLn stderr "  --history [bug number] [n] - List the most recent 'n' changes to the bug."
 
-withBz :: Maybe UserEmail -> Maybe BugzillaServer -> (BugzillaSession -> IO ()) -> IO ()
-withBz mLogin mServer f = do
+withBz :: Maybe BugzillaServer -> (BugzillaSession -> IO ())
+       -> IO ()
+withBz mServer f = do
   let server = case mServer of
                  Just s  -> s
                  Nothing -> error "Please specify a server with '--server'"
-  ctx <- newBugzillaContext server
-  case mLogin of
-    Just login -> do hPutStrLn stderr "Enter password: "
-                     password <- T.pack <$> withEcho False getLine
-                     mSession <- loginSession ctx login password
-                     case mSession of
-                       Just session -> do hPutStrLn stderr "Login successful."
-                                          f session
-                       Nothing      -> do hPutStrLn stderr "Login failed. Falling back to anonymous session."
-                                          f $ anonymousSession ctx
-    Nothing -> f $ anonymousSession ctx
+  f $ anonymousSession server
 
 
 doAssignedTo :: UserEmail -> BugzillaSession -> IO ()
@@ -158,9 +146,3 @@ doHistory bug count session = do
     showAid :: Maybe AttachmentId -> String
     showAid (Just aid) = " (Attachment " ++ show aid ++ ")"
     showAid Nothing    = ""
-
-withEcho :: Bool -> IO a -> IO a
-withEcho echo action =
-    bracket (hGetEcho stdin)
-            (hSetEcho stdin)
-            (const $ hSetEcho stdin echo >> action)
