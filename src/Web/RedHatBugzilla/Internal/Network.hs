@@ -3,7 +3,7 @@
 
 module Web.RedHatBugzilla.Internal.Network
 ( BugzillaServer
-, BugzillaApikey (..)
+, BugzillaApiKey (..)
 , BugzillaSession (..)
 , BugzillaException (..)
 , QueryPart
@@ -38,16 +38,16 @@ import Network.HTTP.Types.URI (QueryText, encodePathSegments, renderQueryText)
 
 type BugzillaServer  = T.Text
 
-newtype BugzillaApikey = BugzillaApikey T.Text
+newtype BugzillaApiKey = BugzillaApiKey T.Text
 
 -- | A session for Bugzilla queries. Use 'anonymousSession' and
 -- 'loginSession', as appropriate, to create one.
 data BugzillaSession = AnonymousSession BugzillaServer
-                     | ApikeySession BugzillaServer BugzillaApikey
+                     | ApiKeySession BugzillaServer BugzillaApiKey
 
 bzServer :: BugzillaSession -> BugzillaServer
 bzServer (AnonymousSession svr) = svr
-bzServer (ApikeySession svr _)   = svr
+bzServer (ApiKeySession svr _)   = svr
 
 data BugzillaException
   = BugzillaJSONParseError String
@@ -77,7 +77,7 @@ newBzRequest session methodParts query =
           queryString = toByteString $ renderQueryText True query
           }
     in case session of
-         ApikeySession _ (BugzillaApikey key) ->
+         ApiKeySession _ (BugzillaApiKey key) ->
            req { requestHeaders = [("Authorization",
                                     "Bearer " <> TE.encodeUtf8 key)] }
          _ -> req

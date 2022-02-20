@@ -27,7 +27,7 @@ module Web.RedHatBugzilla
 
 , BugzillaServer
 , BugzillaSession (..)
-, BugzillaApikey (..)
+, BugzillaApiKey (..)
 
   -- * Querying Bugzilla
 , searchBugs
@@ -84,8 +84,8 @@ import Web.RedHatBugzilla.Internal.Search
 import Web.RedHatBugzilla.Internal.Types
 
 -- | Creates a 'BugzillaSession' using the provided api key.
-apikeySession :: BugzillaServer -> BugzillaApikey -> BugzillaSession
-apikeySession = ApikeySession
+apikeySession :: BugzillaServer -> BugzillaApiKey -> BugzillaSession
+apikeySession = ApiKeySession
 
 -- | Creates an anonymous 'BugzillaSession'. Note that some content
 --   will be hidden by Bugzilla when you make queries in this state.
