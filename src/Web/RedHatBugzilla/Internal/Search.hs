@@ -6,7 +6,7 @@
 --   able to construct a query that causes Bugzilla to return an
 --   error. If you *are* able to construct an erroneous query, please
 --   report a bug.
-module Web.Bugzilla.RedHat.Internal.Search
+module Web.RedHatBugzilla.Internal.Search
 ( FieldType
 , SearchTerm (..)
 , SearchExpression (..)
@@ -18,8 +18,8 @@ import qualified Data.Text as T
 import Data.Time.Clock (UTCTime(..))
 import Data.Time.ISO8601 (formatISO8601)
 
-import Web.Bugzilla.RedHat.Internal.Network
-import Web.Bugzilla.RedHat.Internal.Types
+import Web.RedHatBugzilla.Internal.Network
+import Web.RedHatBugzilla.Internal.Types
 
 class FieldType a where fvAsText :: a -> T.Text
 

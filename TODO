@@ -2,6 +2,4 @@
 
 - instance Monoid SearchExpression?
 
-- rename Bugzilla.Redhat to RedHatBugzilla for 0.4
-
-- use http-query (http-conduit Simple)
+* use http-query

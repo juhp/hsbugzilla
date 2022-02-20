@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Web.Bugzilla.RedHat.Internal.Network
+module Web.RedHatBugzilla.Internal.Network
 ( BugzillaServer
 , BugzillaApikey (..)
 , BugzillaSession (..)

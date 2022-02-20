@@ -3,7 +3,7 @@
 -- | A modified version of Web.Bugzilla.Search to support
 --   the list fields in Red Hat's modified bugzilla API.
 
-module Web.Bugzilla.RedHat.Search
+module Web.RedHatBugzilla.Search
 (
   -- * Search operators
   (.==.)
@@ -43,8 +43,8 @@ module Web.Bugzilla.RedHat.Search
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime(..))
 
-import Web.Bugzilla.RedHat.Internal.Search
-import Web.Bugzilla.RedHat.Internal.Types
+import Web.RedHatBugzilla.Internal.Search
+import Web.RedHatBugzilla.Internal.Types
 
 (.==.) :: FieldType a => Field a -> a -> SearchExpression
 (.==.) = (Term .) . BinaryOp "equals"

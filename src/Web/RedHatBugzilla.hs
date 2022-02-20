@@ -20,7 +20,7 @@
 --   There's a somewhat more in-depth demo program included with the
 --   source code to this package.
 
-module Web.Bugzilla.RedHat
+module Web.RedHatBugzilla
 ( -- * Connecting to Bugzilla
   apikeySession
 , anonymousSession
@@ -79,9 +79,9 @@ import Control.Exception (throw)
 import Data.Aeson (FromJSON)
 import qualified Data.Text as T
 
-import Web.Bugzilla.RedHat.Internal.Network
-import Web.Bugzilla.RedHat.Internal.Search
-import Web.Bugzilla.RedHat.Internal.Types
+import Web.RedHatBugzilla.Internal.Network
+import Web.RedHatBugzilla.Internal.Search
+import Web.RedHatBugzilla.Internal.Types
 
 -- | Creates a 'BugzillaSession' using the provided api key.
 apikeySession :: BugzillaServer -> BugzillaApikey -> BugzillaSession

@@ -5,7 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 
-module Web.Bugzilla.RedHat.Internal.Types
+module Web.RedHatBugzilla.Internal.Types
 ( BugId
 , AttachmentId
 , CommentId
