@@ -4,7 +4,7 @@
 module Main (main) where
 
 import Test.Hspec
-import Web.Bugzilla.RedHat.Search
+import Web.RedHatBugzilla.Search
 
 main :: IO ()
 main = hspec spec

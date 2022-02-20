@@ -1,6 +1,6 @@
 # bugzilla-redhat version history
 
-## 0.4.0 (2022-02-20)
+## 1.0.0 (2022-02-20)
 - rename Web.Bugzilla.RedHat to Web.RedHatBugzilla
 - use Network.HTTP.Simple global session Manager
 - from 28 Feb 2022 Red Hat Bugzilla only allows API key authentication:
