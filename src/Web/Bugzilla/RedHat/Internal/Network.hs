@@ -3,9 +3,7 @@
 
 module Web.Bugzilla.RedHat.Internal.Network
 ( BugzillaServer
-, BugzillaContext (..)
 , BugzillaApikey (..)
-, BugzillaToken (..)
 , BugzillaSession (..)
 , BugzillaException (..)
 , QueryPart
@@ -33,42 +31,30 @@ import Data.Monoid ((<>))
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Typeable
-import Network.HTTP.Conduit (Manager, Request(..), Response(..), defaultRequest, host, httpLbs, path, queryString, secure, parseRequest)
+import Network.HTTP.Simple (defaultRequest, httpLBS, parseRequest)
+import Network.HTTP.Conduit (Request(..), Response(..), host, path, port,
+                             queryString, requestHeaders, secure)
 import Network.HTTP.Types.URI (QueryText, encodePathSegments, renderQueryText)
 
 type BugzillaServer  = T.Text
 
--- | Holds information about a 'BugzillaServer' and manages outgoing
--- connections. You can use 'newBugzillaContext' to create one.
-data BugzillaContext = BugzillaContext
-  { bzServer  :: BugzillaServer
-  , bzManager :: Manager
-  }
-
-newtype BugzillaToken = BugzillaToken T.Text
-
 newtype BugzillaApikey = BugzillaApikey T.Text
-
-instance FromJSON BugzillaToken where
-  parseJSON (Object v) = BugzillaToken <$> v .: "token"
-  parseJSON _          = mzero
 
 -- | A session for Bugzilla queries. Use 'anonymousSession' and
 -- 'loginSession', as appropriate, to create one.
-data BugzillaSession = AnonymousSession BugzillaContext
-                     | LoginSession BugzillaContext BugzillaToken
-                     | ApikeySession BugzillaContext BugzillaApikey
+data BugzillaSession = AnonymousSession BugzillaServer
+                     | ApikeySession BugzillaServer BugzillaApikey
 
-bzContext :: BugzillaSession -> BugzillaContext
-bzContext (AnonymousSession ctx) = ctx
-bzContext (LoginSession ctx _)   = ctx
-bzContext (ApikeySession ctx _)   = ctx
+bzServer :: BugzillaSession -> BugzillaServer
+bzServer (AnonymousSession svr) = svr
+bzServer (ApikeySession svr _)   = svr
 
 data BugzillaException
   = BugzillaJSONParseError String
   | BugzillaAPIError Int String
   | BugzillaUnexpectedValue String
-    deriving (Show, Typeable)
+  deriving (Show, Typeable)
+
 instance Exception BugzillaException
 
 type QueryPart = (T.Text, Maybe T.Text)
@@ -85,10 +71,16 @@ sslRequest =
 
 newBzRequest :: BugzillaSession -> [T.Text] -> QueryText -> Request
 newBzRequest session methodParts query =
-    baseRequest {
-      path        = toByteString $ encodePathSegments $ "rest" : methodParts,
-      queryString = toByteString $ renderQueryText True queryWithToken
-    }
+    let req =
+          baseRequest {
+          path = toByteString $ encodePathSegments $ "rest" : methodParts,
+          queryString = toByteString $ renderQueryText True query
+          }
+    in case session of
+         ApikeySession _ (BugzillaApikey key) ->
+           req { requestHeaders = [("Authorization",
+                                    "Bearer " <> TE.encodeUtf8 key)] }
+         _ -> req
   where
     -- Try to parse the bzServer first, if it has a scheme then use it as the base request,
     -- otherwise force a secure ssl request.
@@ -96,11 +88,7 @@ newBzRequest session methodParts query =
     baseRequest = fromMaybe (sslRequest { host = serverBytes }) (parseRequest serverStr)
     serverBytes = TE.encodeUtf8 serverTxt
     serverStr = T.unpack serverTxt
-    serverTxt = bzServer . bzContext $ session
-    queryWithToken = case session of
-                       AnonymousSession _                     -> query
-                       LoginSession _ (BugzillaToken token)   -> ("token", Just token) : query
-                       ApikeySession _ (BugzillaApikey token) -> ("api_key", Just token) : query
+    serverTxt = bzServer session
 
 data BzError = BzError Int String
                deriving (Eq, Show)
@@ -117,9 +105,9 @@ handleError parseError body = do
     Left _                   -> throw $ BugzillaJSONParseError parseError
     Right (BzError code msg) -> throw $ BugzillaAPIError code msg
 
-sendBzRequest :: FromJSON a => BugzillaSession -> Request -> IO a
-sendBzRequest session req = runResourceT $ do
-  response <- liftIO $ httpLbs req . bzManager . bzContext $ session
+sendBzRequest :: FromJSON a => Request -> IO a
+sendBzRequest req = runResourceT $ do
+  response <- liftIO $ httpLBS req
   let mResult = eitherDecode $ responseBody response
   case mResult of
     Left msg      -> liftIO $ handleError msg (responseBody response)
