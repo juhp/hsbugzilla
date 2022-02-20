@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | This package is designed to provide an easy-to-use, typesafe

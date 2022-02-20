@@ -1,4 +1,3 @@
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | A modified version of Web.Bugzilla.Search to support
