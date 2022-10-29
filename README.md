@@ -14,7 +14,7 @@ Relevant links:
 ## Contributing
 Bug reports, feedback, and fixes are welcome.
 
-Thanks to the contributors!
+Thanks to the original author and contributors!
 
 <a href="https://github.com/juhp/hsbugzilla/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=juhp/hsbugzilla" />
