@@ -95,7 +95,7 @@ intAsText :: Int -> T.Text
 intAsText = T.pack . show
 
 -- | Searches Bugzilla and returns a list of 'Bug's. The 'SearchExpression'
--- can be constructed conveniently using the operators in "Web.Bugzilla.Search".
+-- can be constructed using the operators in "Web.Bugzilla.Search".
 searchBugs :: BugzillaSession -> SearchExpression -> IO [Bug]
 searchBugs session search = do
   BugList bugs <- doSearchBugs session search Nothing Nothing
