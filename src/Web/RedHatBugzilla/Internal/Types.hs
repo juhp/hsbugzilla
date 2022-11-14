@@ -415,7 +415,6 @@ data Bug = Bug
   , bugProduct             :: T.Text
   , bugQaContact           :: UserEmail
   , bugResolution          :: T.Text
-  , bugSeeAlso             :: [T.Text]
   , bugSeverity            :: T.Text
   , bugStatus              :: T.Text
   , bugSummary             :: T.Text
@@ -462,7 +461,6 @@ instance FromJSON Bug where
           <*> v .: "product"
           <*> v .: "qa_contact"
           <*> v .: "resolution"
-          <*> v .: "see_also"
           <*> v .: "severity"
           <*> v .: "status"
           <*> v .: "summary"
