@@ -1,5 +1,8 @@
 # bugzilla-redhat version history
 
+## 1.0.1 (2022-11-16)
+- Red Hat bugzilla no longer has a 'see_also' field (#18)
+
 ## 1.0.0 (2022-02-20)
 - rename Web.Bugzilla.RedHat to Web.RedHatBugzilla
 - use Network.HTTP.Simple global session Manager
