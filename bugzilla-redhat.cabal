@@ -37,7 +37,7 @@ library
                        Web.RedHatBugzilla.Internal.Search,
                        Web.RedHatBugzilla.Internal.Types
   build-depends:       base >=4.6 && <5,
-                       aeson >=0.7 && <2.2,
+                       aeson >=0.7 && <2.3,
                        blaze-builder >=0.3 && <0.5,
                        bytestring >=0.10,
                        containers >=0.5 && <0.7,
