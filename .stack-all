@@ -1,3 +1,4 @@
 [versions]
-# reason comment
-oldest = lts-6
+# lts6 Cabal no longer supported with stack-2.13/
+# with 2.9: error: missing binary operator before token "(": #if MIN_VERSION_Cabal(3,8,1)
+oldest = lts-8
