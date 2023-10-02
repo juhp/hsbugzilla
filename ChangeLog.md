@@ -1,5 +1,11 @@
 # bugzilla-redhat version history
 
+## 1.0.1.1 (2023-10-02)
+- allow aeson-2.2
+- drop redundant transformers dep, allowing ghc-9.6
+- drop redundant explicit connection dependency
+- drop vector upperbound
+
 ## 1.0.1 (2022-11-16)
 - Red Hat bugzilla no longer has a 'see_also' field (#18)
 

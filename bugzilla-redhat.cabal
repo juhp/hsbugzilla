@@ -1,5 +1,5 @@
 name:                bugzilla-redhat
-version:             1.0.1
+version:             1.0.1.1
 synopsis:            A Haskell interface to the Bugzilla native REST API
 description:         This package is designed to provide an easy-to-use,
                      type-safe interface to querying Bugzilla from Haskell.
@@ -13,7 +13,7 @@ license-file:        LICENSE
 author:              Seth Fowler <mark.seth.fowler@gmail.com>
 maintainer:          Jens Petersen <juhpetersen@gmail.com>
 copyright:           2014 Seth Fowler,
-                     2020-2022 Jens Petersen
+                     2020-2023 Jens Petersen
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
