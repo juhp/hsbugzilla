@@ -31,4 +31,6 @@ jobs:
       - run: cabal build --enable-tests
       - run: cabal test --enable-tests --test-show-details=direct
       - run: cabal haddock
+        if: ${{ ! contains(fromJSON('["8.2", "8.4"]'), matrix.ghc) }}
+          # 8.4 fails for http-types
       - run: cabal sdist
