@@ -120,13 +120,15 @@ searchBugs' session search = do
 
 doSearchBugs :: FromJSON a => BugzillaSession -> SearchExpression -> Maybe T.Text -> Maybe (Int, Int) -> IO a
 doSearchBugs session search includeField limits = do
-  let fieldsQuery = case includeField of
-        Nothing -> []
-        Just field -> [("include_fields", Just field)]
-      limitQuery = case limits of
-        Nothing -> []
-        Just (limit, offset) -> [("limit", Just $ intAsText limit),
-                                 ("offset", Just $ intAsText offset)]
+  let fieldsQuery =
+        case includeField of
+          Nothing -> []
+          Just field -> [("include_fields", Just field)]
+      limitQuery =
+        case limits of
+          Nothing -> []
+          Just (limit, offset) -> [("limit", Just $ intAsText limit),
+                                   ("offset", Just $ intAsText offset)]
       searchQuery = evalSearchExpr search
       req = newBzRequest session ["bug"] (limitQuery ++ fieldsQuery ++ searchQuery)
   sendBzRequest req
