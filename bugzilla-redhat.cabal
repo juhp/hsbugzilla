@@ -60,11 +60,11 @@ executable bugzilla
 
   ghc-options:         -Wall
   main-is:             BugzillaDemo.hs
-  build-depends:       base >=4.6 && <5,
+  build-depends:       base < 5,
                        bugzilla-redhat,
-                       containers >=0.5 && <0.8,
-                       text >=0.11,
-                       time >=1.4 && <1.13
+                       containers,
+                       text,
+                       time
   hs-source-dirs:      demo
   default-language:    Haskell2010
 
@@ -72,10 +72,10 @@ test-suite bugzilla-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       base >=4.6 && <5,
-                       aeson >=0.7 && <2.3,
+  build-depends:       base,
+                       aeson,
                        bugzilla-redhat,
                        hspec >=2.0 && <3.0,
-                       time >=1.4 && <1.13
+                       time
   ghc-options:         -Wall
   default-language:    Haskell2010
