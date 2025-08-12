@@ -46,7 +46,7 @@ library
                        iso8601-time >=0.1 && <1.6,
                        resourcet >=0.4,
                        text >=0.11,
-                       time >=1.4 && <1.13,
+                       time >=1.4 && <1.15,
                        unordered-containers >=0.2 && <0.3,
                        vector >= 0.10
   hs-source-dirs:      src
