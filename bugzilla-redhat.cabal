@@ -13,7 +13,7 @@ license-file:        LICENSE
 author:              Seth Fowler <mark.seth.fowler@gmail.com>
 maintainer:          Jens Petersen <juhpetersen@gmail.com>
 copyright:           2014 Seth Fowler,
-                     2020-2023 Jens Petersen
+                     2020-2025 Jens Petersen
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
