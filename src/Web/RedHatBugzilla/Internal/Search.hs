@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -13,7 +14,9 @@ module Web.RedHatBugzilla.Internal.Search
 , evalSearchExpr
 ) where
 
-import Data.List
+#if !MIN_VERSION_base(4,20,0)
+import Data.List (foldl')
+#endif
 import qualified Data.Text as T
 import Data.Time.Clock (UTCTime(..))
 import Data.Time.ISO8601 (formatISO8601)
