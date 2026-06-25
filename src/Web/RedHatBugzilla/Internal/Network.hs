@@ -30,7 +30,6 @@ import Data.Monoid ((<>))
 #endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Typeable
 import Network.HTTP.Simple (defaultRequest, httpLBS, parseRequest)
 import Network.HTTP.Conduit (Request(..), Response(..), host, path, port,
                              queryString, requestHeaders, secure)
@@ -53,7 +52,7 @@ data BugzillaException
   = BugzillaJSONParseError String
   | BugzillaAPIError Int String
   | BugzillaUnexpectedValue String
-  deriving (Show, Typeable)
+  deriving (Show)
 
 instance Exception BugzillaException
 
